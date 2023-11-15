@@ -1,49 +1,34 @@
-cook_book = {
-    'Омлет': [
-        {'ingredient_name': 'Яйцо', 'quantity': 2, 'measure': 'шт.'},
-        {'ingredient_name': 'Молоко', 'quantity': 100, 'measure': 'мл'},
-        {'ingredient_name': 'Помидор', 'quantity': 2, 'measure': 'шт'}
-    ],
-    'Утка по-пекински': [
-        {'ingredient_name': 'Утка', 'quantity': 1, 'measure': 'шт'},
-        {'ingredient_name': 'Вода', 'quantity': 2, 'measure': 'л'},
-        {'ingredient_name': 'Мед', 'quantity': 3, 'measure': 'ст.л'},
-        {'ingredient_name': 'Соевый соус', 'quantity': 60, 'measure': 'мл'}
-    ],
-    'Запеченный картофель': [
-        {'ingredient_name': 'Картофель', 'quantity': 1, 'measure': 'кг'},
-        {'ingredient_name': 'Чеснок', 'quantity': 3, 'measure': 'зубч'},
-        {'ingredient_name': 'Сыр гауда', 'quantity': 100, 'measure': 'г'},
-    ]
-}
+def read_file(file_path):
+    with open(file_path, 'r', encoding='utf-8') as f:
+        return f.read()
 
 
-def print_dish_info(dish_name, dish_data):
-    print(dish_name)
-    print(f'Ингредиентов: {len(dish_data)}')
-    for ingredient in dish_data:
-        print(f'{ingredient["ingredient_name"]} | {ingredient["quantity"]} | {ingredient["measure"]}')
+def split_text(text):
+    return [i.splitlines() for i in text.split('\n\n')]
 
 
-for dish_name in cook_book:
-    if dish_name in cook_book:
-        print_dish_info(dish_name, cook_book[dish_name])
-    else:
-        print(f'Ингредиентов для блюда "{dish_name}" нет в рецепте')
+def split_ingredients_data(lst):
+    return lst[:1] + [i.replace(' ', '').split('|') for i in lst[2:]]
 
 
-def print_dish_info(dish_name, dish_data, file):
-    file.write(dish_name + '\n')
-    file.write(f'Ингредиентов: {len(dish_data)}\n')
-    for ingredient in dish_data:
-        file.write(f'{ingredient["ingredient_name"]} | {ingredient["quantity"]} | {ingredient["measure"]}\n')
+def lst_to_dict(lst):
+    return {lst[0]: [{'ingredient_name': i[0], 'quantity': int(i[1]), 'measure': i[2]} for i in lst[1:]]}
 
 
-with open('recipes.txt', 'w') as file:
-    for dish_name in cook_book:
-        file.write('\n')
-        if dish_name in cook_book:
-            print_dish_info(dish_name, cook_book[dish_name], file)
-        else:
-            file.write(f'Ингредиентов для блюда "{dish_name}" нет в рецепте\n')
+def data_loads(file_path):
+    cook_book = {}
+    text = read_file(file_path)
+    dish_list = split_text(text)
+    format_dish_list = [split_ingredients_data(i) for i in dish_list]
+    for i in format_dish_list:
+        cook_book.update(lst_to_dict(i))
+    return cook_book
 
+
+res = data_loads('recipes.txt')
+
+for recipe_name, ingredients in res.items():
+    print(f"{recipe_name}:")
+    for ingredient in ingredients:
+        print(f"{ingredient['ingredient_name']}: {ingredient['quantity']} {ingredient['measure']}")
+    print()
